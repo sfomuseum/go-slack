@@ -87,6 +87,21 @@ The following Go Cloud `runtimevar` services are supported by the `to-slack` too
 * [AWS Parameter Store](https://gocloud.dev/howto/runtimevar/#awsps)
 * [Local](https://gocloud.dev/howto/runtimevar/#local)
 
+It is possible to load runtimevar data from AWS Parameter Store using [aaronland/go-aws-session](https://github.com/aaronland/go-aws-session) -style credential strings. For example:
+
+```
+awsparamstore://{KEY}?region={REGION}&credentials={CREDENTIALS}
+```
+
+Credentials for AWS sessions are defined as string labels. They are:
+
+| Label | Description |
+| --- | --- |
+| `env:` | Read credentials from AWS defined environment variables. |
+| `iam:` | Assume AWS IAM credentials are in effect. |
+| `{AWS_PROFILE_NAME}` | This this profile from the default AWS credentials location. |
+| `{AWS_CREDENTIALS_PATH}:{AWS_PROFILE_NAME}` | This this profile from a user-defined AWS credentials location. |
+
 #### Future work
 
 It occurs to me that this tool could be extended easily enough to act as a Lambda function which would allow messages posted to an S3 bucket to be dispatched to Slack. That's an interesting idea but likely overkill. In any event SFO Museum has no need for this functionality (yet).
@@ -95,3 +110,4 @@ It occurs to me that this tool could be extended easily enough to act as a Lambd
 
 * https://gocloud.dev/howto/runtimevar
 * https://github.com/sfomuseum/runtimevar
+* https://github.com/aaronland/go-aws-session
