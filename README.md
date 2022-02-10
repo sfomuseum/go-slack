@@ -46,7 +46,7 @@ go build -mod vendor -o bin/to-slack cmd/to-slack/main.go
 
 ### to-slack
 
-Post a message to a Slack channel. The principal difference between `to-slack` and other similar tools is the use of the [Go Cloud runtimevar URIs](https://gocloud.dev/howto/runtimevar) to define Slack Webhook URIs. This allows these otherwise sensitive values to be stored and retrieved from a variety of different storage mechanisms.
+Post a message to a Slack channel. The principal difference between `to-slack` and other similar tools is the use of [Go Cloud runtimevar URIs](https://gocloud.dev/howto/runtimevar) to define Slack Webhook URIs. This allows these otherwise sensitive values to be stored and retrieved from a variety of different storage mechanisms.
 
 ```
 > ./bin/to-slack -h
