@@ -1,9 +1,14 @@
 // post is a command-line tool for posting messages to a Slack channel. For example:
+//
 //	$> ./bin/post -channel test -webhook-uri 'constant://?val=https://hooks.slack.com/services/.../.../...' testing
+//
 // Or:
+//
 //	$> echo "wub wub wub" | ./bin/post -channel test -webhook-uri 'constant://?val=https://hooks.slack.com/services/.../.../...' -stdin
+//
 // Or:
-// 	$> echo "wub wub wub" | ./bin/post -channel test -webhook 'awsparamstore://{SECRET_NAME}?region={REGION}&credentials={CREDENTIALS}' -stdin
+//
+//	$> echo "wub wub wub" | ./bin/post -channel test -webhook 'awsparamstore://{SECRET_NAME}?region={REGION}&credentials={CREDENTIALS}' -stdin
 package main
 
 import (
@@ -17,11 +22,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/sfomuseum/go-slack"
-	"github.com/sfomuseum/runtimevar"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/sfomuseum/go-slack"
+	"github.com/sfomuseum/runtimevar"
 )
 
 func main() {
