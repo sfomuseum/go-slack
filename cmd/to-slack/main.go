@@ -63,6 +63,8 @@ func main() {
 
 	// Create message
 
+	foo := false
+	
 	raw := flag.Args()
 
 	if *stdin {
@@ -70,7 +72,27 @@ func main() {
 		scanner := bufio.NewScanner(os.Stdin)
 
 		for scanner.Scan() {
-			raw = append(raw, scanner.Text())
+
+			t := scanner.Text()
+
+			if !foo {						
+				raw = append(raw, t)
+				continue
+			}
+
+			m := &slack.Message{
+				Channel: *channel,
+				Text:    t,
+			}
+			
+			// Post message
+			
+			err = wh.Post(ctx, m)
+			
+			if err != nil {
+				log.Fatalf("Failed to post message, %v", err)
+			}
+			
 		}
 
 		err := scanner.Err()
@@ -81,6 +103,10 @@ func main() {
 
 	}
 
+	if foo {
+		return
+	}
+	
 	text := strings.Join(raw, " ")
 
 	m := &slack.Message{
