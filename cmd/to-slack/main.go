@@ -32,9 +32,17 @@ import (
 
 func main() {
 
-	channel := flag.String("channel", "", "A valid Slack channel to post to.")
-	runtimevar_uri := flag.String("webhook-uri", "", "A valid gocloud.dev/runtimevar URI containing a Slack webhook URL to post to.")
-	stdin := flag.Bool("stdin", false, "Read input from STDIN")
+	var channel string
+	var runtimevar_uri string
+	var stdin bool
+	var message_per_line bool
+	var prefix string
+
+	flag.StringVar(&channel, "channel", "", "A valid Slack channel to post to.")
+	flag.StringVar(&runtimevar_uri, "webhook-uri", "", "A valid gocloud.dev/runtimevar URI containing a Slack webhook URL to post to.")
+	flag.StringVar(&prefix, "prefix", "", "Optional prefix to prepend each message with.")
+	flag.BoolVar(&stdin, "stdin", false, "Read input from STDIN")
+	flag.BoolVar(&message_per_line, "message-per-line", false, "Send a message for each line when reading input from STDIN.")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Post a message to a Slack channel.\n")
@@ -49,7 +57,7 @@ func main() {
 
 	// Create webhook thingy
 
-	webhook_uri, err := runtimevar.StringVar(ctx, *runtimevar_uri)
+	webhook_uri, err := runtimevar.StringVar(ctx, runtimevar_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to derive webhook uri from runtimevar, %v", err)
@@ -63,11 +71,9 @@ func main() {
 
 	// Create message
 
-	foo := false
-	
 	raw := flag.Args()
 
-	if *stdin {
+	if stdin {
 
 		scanner := bufio.NewScanner(os.Stdin)
 
@@ -75,24 +81,28 @@ func main() {
 
 			t := scanner.Text()
 
-			if !foo {						
+			if !message_per_line {
 				raw = append(raw, t)
 				continue
 			}
 
+			if prefix != "" {
+				t = fmt.Sprintf("%s %s", prefix, t)
+			}
+
 			m := &slack.Message{
-				Channel: *channel,
+				Channel: channel,
 				Text:    t,
 			}
-			
+
 			// Post message
-			
-			err = wh.Post(ctx, m)
-			
+
+			err := wh.Post(ctx, m)
+
 			if err != nil {
 				log.Fatalf("Failed to post message, %v", err)
 			}
-			
+
 		}
 
 		err := scanner.Err()
@@ -103,18 +113,20 @@ func main() {
 
 	}
 
-	if foo {
-		return
-	}
-	
 	text := strings.Join(raw, " ")
 
-	m := &slack.Message{
-		Channel: *channel,
-		Text:    text,
+	if text == "" {
+		return
 	}
 
-	// Post message
+	if prefix != "" {
+		text = fmt.Sprintf("%s %s", prefix, text)
+	}
+
+	m := &slack.Message{
+		Channel: channel,
+		Text:    text,
+	}
 
 	err = wh.Post(ctx, m)
 

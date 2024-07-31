@@ -350,6 +350,26 @@ func (m *validateOpDeleteMaintenanceWindow) HandleInitialize(ctx context.Context
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDeleteOpsItem struct {
+}
+
+func (*validateOpDeleteOpsItem) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDeleteOpsItem) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DeleteOpsItemInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDeleteOpsItemInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDeleteOpsMetadata struct {
 }
 
@@ -805,6 +825,26 @@ func (m *validateOpDescribeInstancePatchStates) HandleInitialize(ctx context.Con
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpDescribeInstancePatchStatesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpDescribeInstanceProperties struct {
+}
+
+func (*validateOpDescribeInstanceProperties) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDescribeInstanceProperties) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DescribeInstancePropertiesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDescribeInstancePropertiesInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -2538,6 +2578,10 @@ func addOpDeleteMaintenanceWindowValidationMiddleware(stack *middleware.Stack) e
 	return stack.Initialize.Add(&validateOpDeleteMaintenanceWindow{}, middleware.After)
 }
 
+func addOpDeleteOpsItemValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDeleteOpsItem{}, middleware.After)
+}
+
 func addOpDeleteOpsMetadataValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteOpsMetadata{}, middleware.After)
 }
@@ -2628,6 +2672,10 @@ func addOpDescribeInstancePatchStatesForPatchGroupValidationMiddleware(stack *mi
 
 func addOpDescribeInstancePatchStatesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDescribeInstancePatchStates{}, middleware.After)
+}
+
+func addOpDescribeInstancePropertiesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDescribeInstanceProperties{}, middleware.After)
 }
 
 func addOpDescribeMaintenanceWindowExecutionsValidationMiddleware(stack *middleware.Stack) error {
@@ -3511,6 +3559,76 @@ func validateInstancePatchStateFilterList(v []types.InstancePatchStateFilter) er
 	invalidParams := smithy.InvalidParamsError{Context: "InstancePatchStateFilterList"}
 	for i := range v {
 		if err := validateInstancePatchStateFilter(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateInstancePropertyFilter(v *types.InstancePropertyFilter) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "InstancePropertyFilter"}
+	if len(v.Key) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if v.ValueSet == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ValueSet"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateInstancePropertyFilterList(v []types.InstancePropertyFilter) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "InstancePropertyFilterList"}
+	for i := range v {
+		if err := validateInstancePropertyFilter(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateInstancePropertyStringFilter(v *types.InstancePropertyStringFilter) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "InstancePropertyStringFilter"}
+	if v.Key == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Key"))
+	}
+	if v.Values == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Values"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateInstancePropertyStringFilterList(v []types.InstancePropertyStringFilter) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "InstancePropertyStringFilterList"}
+	for i := range v {
+		if err := validateInstancePropertyStringFilter(&v[i]); err != nil {
 			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
 		}
 	}
@@ -4685,6 +4803,9 @@ func validateOpCreateMaintenanceWindowInput(v *CreateMaintenanceWindowInput) err
 	if v.Schedule == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Schedule"))
 	}
+	if v.Duration == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Duration"))
+	}
 	if v.Tags != nil {
 		if err := validateTagList(v.Tags); err != nil {
 			invalidParams.AddNested("Tags", err.(smithy.InvalidParamsError))
@@ -4860,6 +4981,21 @@ func validateOpDeleteMaintenanceWindowInput(v *DeleteMaintenanceWindowInput) err
 	invalidParams := smithy.InvalidParamsError{Context: "DeleteMaintenanceWindowInput"}
 	if v.WindowId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("WindowId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpDeleteOpsItemInput(v *DeleteOpsItemInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DeleteOpsItemInput"}
+	if v.OpsItemId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("OpsItemId"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -5255,6 +5391,28 @@ func validateOpDescribeInstancePatchStatesInput(v *DescribeInstancePatchStatesIn
 	invalidParams := smithy.InvalidParamsError{Context: "DescribeInstancePatchStatesInput"}
 	if v.InstanceIds == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("InstanceIds"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpDescribeInstancePropertiesInput(v *DescribeInstancePropertiesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DescribeInstancePropertiesInput"}
+	if v.InstancePropertyFilterList != nil {
+		if err := validateInstancePropertyFilterList(v.InstancePropertyFilterList); err != nil {
+			invalidParams.AddNested("InstancePropertyFilterList", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.FiltersWithOperator != nil {
+		if err := validateInstancePropertyStringFilterList(v.FiltersWithOperator); err != nil {
+			invalidParams.AddNested("FiltersWithOperator", err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

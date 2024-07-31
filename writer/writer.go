@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/sfomuseum/go-slack"	
+	"github.com/sfomuseum/go-slack"
 )
 
 // type SlackWriter implements the io.Writer interface for posting messages to Slack.
