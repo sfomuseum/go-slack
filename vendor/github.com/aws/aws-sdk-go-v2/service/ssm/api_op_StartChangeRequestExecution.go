@@ -12,9 +12,16 @@ import (
 	"time"
 )
 
+// Amazon Web Services Systems Manager Change Manager will no longer be open to
+// new customers starting November 7, 2025. If you would like to use Change
+// Manager, sign up prior to that date. Existing customers can continue to use the
+// service as normal. For more information, see [Amazon Web Services Systems Manager Change Manager availability change].
+//
 // Creates a change request for Change Manager. The Automation runbooks specified
 // in the change request run only after all required approvals for the change
 // request have been received.
+//
+// [Amazon Web Services Systems Manager Change Manager availability change]: https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager-availability-change.html
 func (c *Client) StartChangeRequestExecution(ctx context.Context, params *StartChangeRequestExecutionInput, optFns ...func(*Options)) (*StartChangeRequestExecutionOutput, error) {
 	if params == nil {
 		params = &StartChangeRequestExecutionInput{}
@@ -38,20 +45,25 @@ type StartChangeRequestExecutionInput struct {
 	DocumentName *string
 
 	// Information about the Automation runbooks that are run during the runbook
-	// workflow. The Automation runbooks specified for the runbook workflow can't run
-	// until all required approvals for the change request have been received.
+	// workflow.
+	//
+	// The Automation runbooks specified for the runbook workflow can't run until all
+	// required approvals for the change request have been received.
 	//
 	// This member is required.
 	Runbooks []types.Runbook
 
 	// Indicates whether the change request can be approved automatically without the
-	// need for manual approvals. If AutoApprovable is enabled in a change template,
-	// then setting AutoApprove to true in StartChangeRequestExecution creates a
-	// change request that bypasses approver review. Change Calendar restrictions are
-	// not bypassed in this scenario. If the state of an associated calendar is CLOSED
-	// , change freeze approvers must still grant permission for this change request to
-	// run. If they don't, the change won't be processed until the calendar state is
-	// again OPEN .
+	// need for manual approvals.
+	//
+	// If AutoApprovable is enabled in a change template, then setting AutoApprove to
+	// true in StartChangeRequestExecution creates a change request that bypasses
+	// approver review.
+	//
+	// Change Calendar restrictions are not bypassed in this scenario. If the state of
+	// an associated calendar is CLOSED , change freeze approvers must still grant
+	// permission for this change request to run. If they don't, the change won't be
+	// processed until the calendar state is again OPEN .
 	AutoApprove bool
 
 	// User-provided details about the change. If no details are provided, content
@@ -79,8 +91,10 @@ type StartChangeRequestExecutionInput struct {
 	ScheduledEndTime *time.Time
 
 	// The date and time specified in the change request to run the Automation
-	// runbooks. The Automation runbooks specified for the runbook workflow can't run
-	// until all required approvals for the change request have been received.
+	// runbooks.
+	//
+	// The Automation runbooks specified for the runbook workflow can't run until all
+	// required approvals for the change request have been received.
 	ScheduledTime *time.Time
 
 	// Optional metadata that you assign to a resource. You can specify a maximum of
@@ -89,8 +103,16 @@ type StartChangeRequestExecutionInput struct {
 	// might want to tag a change request to identify an environment or target Amazon
 	// Web Services Region. In this case, you could specify the following key-value
 	// pairs:
+	//
 	//   - Key=Environment,Value=Production
+	//
 	//   - Key=Region,Value=us-east-2
+	//
+	// The Array Members maximum value is reported as 1000. This number includes
+	// capacity reserved for internal operations. When calling the
+	// StartChangeRequestExecution action, you can specify a maximum of 5 tags. You
+	// can, however, use the AddTagsToResourceaction to add up to a total of 50 tags to an existing
+	// change request configuration.
 	Tags []types.Tag
 
 	noSmithyDocumentSerde
@@ -151,6 +173,9 @@ func (c *Client) addOperationStartChangeRequestExecutionMiddlewares(stack *middl
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -161,6 +186,15 @@ func (c *Client) addOperationStartChangeRequestExecutionMiddlewares(stack *middl
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpStartChangeRequestExecutionValidationMiddleware(stack); err != nil {
@@ -182,6 +216,15 @@ func (c *Client) addOperationStartChangeRequestExecutionMiddlewares(stack *middl
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

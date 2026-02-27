@@ -11,8 +11,15 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
+// Amazon Web Services Systems Manager Change Manager will no longer be open to
+// new customers starting November 7, 2025. If you would like to use Change
+// Manager, sign up prior to that date. Existing customers can continue to use the
+// service as normal. For more information, see [Amazon Web Services Systems Manager Change Manager availability change].
+//
 // Updates information related to approval reviews for a specific version of a
 // change template in Change Manager.
+//
+// [Amazon Web Services Systems Manager Change Manager availability change]: https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager-availability-change.html
 func (c *Client) UpdateDocumentMetadata(ctx context.Context, params *UpdateDocumentMetadataInput, optFns ...func(*Options)) (*UpdateDocumentMetadataOutput, error) {
 	if params == nil {
 		params = &UpdateDocumentMetadataInput{}
@@ -96,6 +103,9 @@ func (c *Client) addOperationUpdateDocumentMetadataMiddlewares(stack *middleware
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -106,6 +116,15 @@ func (c *Client) addOperationUpdateDocumentMetadataMiddlewares(stack *middleware
 		return err
 	}
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
+		return err
+	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUpdateDocumentMetadataValidationMiddleware(stack); err != nil {
@@ -127,6 +146,15 @@ func (c *Client) addOperationUpdateDocumentMetadataMiddlewares(stack *middleware
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

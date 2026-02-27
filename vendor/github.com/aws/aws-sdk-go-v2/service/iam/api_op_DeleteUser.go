@@ -6,26 +6,44 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Deletes the specified IAM user. Unlike the Amazon Web Services Management
 // Console, when you delete a user programmatically, you must delete the items
-// attached to the user manually, or the deletion fails. For more information, see
-// Deleting an IAM user (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli)
+// attached to the user manually, or the deletion fails. For more information, see [Deleting an IAM user]
 // . Before attempting to delete a user, remove the following items:
-//   - Password ( DeleteLoginProfile )
-//   - Access keys ( DeleteAccessKey )
-//   - Signing certificate ( DeleteSigningCertificate )
-//   - SSH public key ( DeleteSSHPublicKey )
-//   - Git credentials ( DeleteServiceSpecificCredential )
-//   - Multi-factor authentication (MFA) device ( DeactivateMFADevice ,
-//     DeleteVirtualMFADevice )
-//   - Inline policies ( DeleteUserPolicy )
-//   - Attached managed policies ( DetachUserPolicy )
-//   - Group memberships ( RemoveUserFromGroup )
+//
+//   - Password ([DeleteLoginProfile] )
+//
+//   - Access keys ([DeleteAccessKey] )
+//
+//   - Signing certificate ([DeleteSigningCertificate] )
+//
+//   - SSH public key ([DeleteSSHPublicKey] )
+//
+//   - Git credentials ([DeleteServiceSpecificCredential] )
+//
+//   - Multi-factor authentication (MFA) device ([DeactivateMFADevice] , [DeleteVirtualMFADevice])
+//
+//   - Inline policies ([DeleteUserPolicy] )
+//
+//   - Attached managed policies ([DetachUserPolicy] )
+//
+//   - Group memberships ([RemoveUserFromGroup] )
+//
+// [DetachUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DetachUserPolicy.html
+// [DeleteAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteAccessKey.html
+// [DeleteVirtualMFADevice]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteVirtualMFADevice.html
+// [Deleting an IAM user]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli
+// [DeleteUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteUserPolicy.html
+// [RemoveUserFromGroup]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_RemoveUserFromGroup.html
+// [DeleteLoginProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteLoginProfile.html
+// [DeleteServiceSpecificCredential]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteServiceSpecificCredential.html
+// [DeleteSigningCertificate]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteSigningCertificate.html
+// [DeleteSSHPublicKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteSSHPublicKey.html
+// [DeactivateMFADevice]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeactivateMFADevice.html
 func (c *Client) DeleteUser(ctx context.Context, params *DeleteUserInput, optFns ...func(*Options)) (*DeleteUserOutput, error) {
 	if params == nil {
 		params = &DeleteUserInput{}
@@ -43,10 +61,13 @@ func (c *Client) DeleteUser(ctx context.Context, params *DeleteUserInput, optFns
 
 type DeleteUserInput struct {
 
-	// The name of the user to delete. This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex)
-	// ) a string of characters consisting of upper and lowercase alphanumeric
-	// characters with no spaces. You can also include any of the following characters:
-	// _+=,.@-
+	// The name of the user to delete.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
 	UserName *string
@@ -83,25 +104,28 @@ func (c *Client) addOperationDeleteUserMiddlewares(stack *middleware.Stack, opti
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -116,13 +140,22 @@ func (c *Client) addOperationDeleteUserMiddlewares(stack *middleware.Stack, opti
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteUserValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteUser(options.Region), middleware.Before); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -135,6 +168,15 @@ func (c *Client) addOperationDeleteUserMiddlewares(stack *middleware.Stack, opti
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

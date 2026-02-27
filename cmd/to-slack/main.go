@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/sfomuseum/go-slack"
-	"github.com/sfomuseum/runtimevar"
+	"github.com/aaronland/gocloud/runtimevar"
 )
 
 func main() {

@@ -6,21 +6,27 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deletes the password for the specified IAM user, For more information, see
-// Managing passwords for IAM users (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_admin-change-user.html)
-// . You can use the CLI, the Amazon Web Services API, or the Users page in the IAM
-// console to delete a password for any IAM user. You can use ChangePassword to
-// update, but not delete, your own password in the My Security Credentials page in
-// the Amazon Web Services Management Console. Deleting a user's password does not
-// prevent a user from accessing Amazon Web Services through the command line
-// interface or the API. To prevent all user access, you must also either make any
-// access keys inactive or delete them. For more information about making keys
-// inactive or deleting them, see UpdateAccessKey and DeleteAccessKey .
+// Deletes the password for the specified IAM user or root user, For more
+// information, see [Managing passwords for IAM users].
+//
+// You can use the CLI, the Amazon Web Services API, or the Users page in the IAM
+// console to delete a password for any IAM user. You can use [ChangePassword]to update, but not
+// delete, your own password in the My Security Credentials page in the Amazon Web
+// Services Management Console.
+//
+// Deleting a user's password does not prevent a user from accessing Amazon Web
+// Services through the command line interface or the API. To prevent all user
+// access, you must also either make any access keys inactive or delete them. For
+// more information about making keys inactive or deleting them, see [UpdateAccessKey]and [DeleteAccessKey].
+//
+// [ChangePassword]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ChangePassword.html
+// [DeleteAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteAccessKey.html
+// [Managing passwords for IAM users]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_passwords_admin-change-user.html
+// [UpdateAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_UpdateAccessKey.html
 func (c *Client) DeleteLoginProfile(ctx context.Context, params *DeleteLoginProfileInput, optFns ...func(*Options)) (*DeleteLoginProfileOutput, error) {
 	if params == nil {
 		params = &DeleteLoginProfileInput{}
@@ -38,12 +44,18 @@ func (c *Client) DeleteLoginProfile(ctx context.Context, params *DeleteLoginProf
 
 type DeleteLoginProfileInput struct {
 
-	// The name of the user whose password you want to delete. This parameter allows
-	// (through its regex pattern (http://wikipedia.org/wiki/regex) ) a string of
-	// characters consisting of upper and lowercase alphanumeric characters with no
-	// spaces. You can also include any of the following characters: _+=,.@-
+	// The name of the user whose password you want to delete.
 	//
-	// This member is required.
+	// This parameter is optional. If no user name is included, it defaults to the
+	// principal making the request. When you make this request with root user
+	// credentials, you must use an [AssumeRoot]session to omit the user name.
+	//
+	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
+	// and lowercase alphanumeric characters with no spaces. You can also include any
+	// of the following characters: _+=,.@-
+	//
+	// [AssumeRoot]: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoot.html
+	// [regex pattern]: http://wikipedia.org/wiki/regex
 	UserName *string
 
 	noSmithyDocumentSerde
@@ -78,25 +90,28 @@ func (c *Client) addOperationDeleteLoginProfileMiddlewares(stack *middleware.Sta
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddClientRequestIDMiddleware(stack); err != nil {
+	if err = addClientRequestID(stack); err != nil {
 		return err
 	}
-	if err = smithyhttp.AddComputeContentLengthMiddleware(stack); err != nil {
+	if err = addComputeContentLength(stack); err != nil {
 		return err
 	}
 	if err = addResolveEndpointMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = v4.AddComputePayloadSHA256Middleware(stack); err != nil {
+	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetryMiddlewares(stack, options); err != nil {
+	if err = addRetry(stack, options); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRawResponseToMetadata(stack); err != nil {
+	if err = addRawResponseToMetadata(stack); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
+	if err = addRecordResponseTiming(stack); err != nil {
+		return err
+	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
 		return err
 	}
 	if err = addClientUserAgent(stack, options); err != nil {
@@ -111,13 +126,19 @@ func (c *Client) addOperationDeleteLoginProfileMiddlewares(stack *middleware.Sta
 	if err = addSetLegacyContextSigningOptionsMiddleware(stack); err != nil {
 		return err
 	}
-	if err = addOpDeleteLoginProfileValidationMiddleware(stack); err != nil {
+	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteLoginProfile(options.Region), middleware.Before); err != nil {
 		return err
 	}
-	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
+	if err = addRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -130,6 +151,15 @@ func (c *Client) addOperationDeleteLoginProfileMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
